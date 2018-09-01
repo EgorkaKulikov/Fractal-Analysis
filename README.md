@@ -1,1 +1,5 @@
-# Fractal-Analysis
+# Research on fractal analysis methods
+# Supervised by Nataly B. Ampilova
+#
+# Related articles:
+# Н. Ампилова, Е. Куликов, В. Сергеев, И. Соловьёв "Методы фрактального анализа в исследовании изображений биомедицинских препаратов", Дифференциальные уравнения и процессы управления, 2018
