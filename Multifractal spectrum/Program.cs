@@ -2,6 +2,7 @@
 using System.IO;
 using System.Drawing;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace Multifractal_spectrum
 {
@@ -39,7 +40,8 @@ C:\test\image1.jpg");
       int.TryParse(Console.ReadLine(), out converterType);
 
       int existedDirectories = (new DirectoryInfo(imagePath)).GetDirectories().Length;
-      actualLayersPath = Path.Combine(imagePath, "Layers") + (existedDirectories + 1).ToString();
+      int directoryNumber = GetDirectoryNumber(imagePath);
+      actualLayersPath = Path.Combine(imagePath, "Layers ") + directoryNumber.ToString();
       Directory.CreateDirectory(actualLayersPath);
 
       Console.WriteLine("\nВычисляются показатели сингулярности...");
@@ -47,10 +49,10 @@ C:\test\image1.jpg");
 
       //Создание изображения, вычисление спектра и множеств уровня
       Bitmap image = (Bitmap)Image.FromFile(path);
-      string spectrum = mainClass.CalculateSpectrum(image, (ConverterType)(converterType-1));
+      string spectrum = mainClass.CalculateSpectrum(image, (ConverterType)(converterType - 1));
 
       Console.WriteLine("\nМножества уровня построены");
-      Console.WriteLine("Номер папки с множествами уровня : {0}", existedDirectories + 1);
+      Console.WriteLine("Номер папки с множествами уровня : {0}", directoryNumber);
       Console.WriteLine("Мультифрактальный спектр вычислен и находится в файле spectrum.txt");
 
       //Сохранение спектра в текстовый файл
@@ -65,8 +67,32 @@ C:\test\image1.jpg");
       DateTime after = DateTime.Now;
       string s = (after - before).ToString();
 
-       Console.WriteLine("\nЖелаем вам всего доброго!");
+      Console.WriteLine("\nЖелаем вам всего доброго!");
       Console.ReadKey();
+    }
+
+    private static int GetDirectoryNumber(string imagePath)
+    {
+      List<int> usedValues = new List<int>();
+
+      DirectoryInfo imageDirectory = new DirectoryInfo(imagePath);
+      foreach (DirectoryInfo layersDirectory in imageDirectory.GetDirectories())
+      {
+        string name = layersDirectory.Name;
+        if (name.IndexOf(' ') >= 0)
+        {
+          int current = int.Parse(name.Split(' ')[1]);
+          usedValues.Add(current);
+        }
+      }
+      usedValues.Sort();
+
+      if (usedValues.Count > 0)
+      {
+        return usedValues[usedValues.Count - 1] + 1;
+      }
+
+      return 0;
     }
   }
 }
