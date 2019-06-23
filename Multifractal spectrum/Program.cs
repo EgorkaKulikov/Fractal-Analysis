@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Drawing;
-using System.Threading;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Multifractal_spectrum
 {
@@ -49,7 +49,7 @@ C:\test\image1.jpg");
 
       //Создание изображения, вычисление спектра и множеств уровня
       Bitmap image = (Bitmap)Image.FromFile(path);
-      string spectrum = mainClass.CalculateSpectrum(image, (ConverterType)(converterType - 1));
+      var spectrum = mainClass.CalculateSpectrum(image, (ConverterType)(converterType - 1));
 
       Console.WriteLine("\nМножества уровня построены");
       Console.WriteLine("Номер папки с множествами уровня : {0}", directoryNumber);
@@ -60,7 +60,13 @@ C:\test\image1.jpg");
       using (StreamWriter sw = new StreamWriter(actualSpectrumPath, true))
       {
         sw.WriteLine("*********************");
-        sw.WriteLine(spectrum);
+        var outputInfo = new StringBuilder();
+        foreach (var layerInfo in spectrum)
+        {
+          outputInfo.Append(string.Format("{0:0.00 }", layerInfo.Key));
+          outputInfo.Append(string.Format("{0:0.00}\r\n", layerInfo.Value));
+        }
+        sw.WriteLine(outputInfo);
         sw.Close();
       }
 

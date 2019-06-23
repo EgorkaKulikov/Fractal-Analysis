@@ -2,7 +2,6 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
 using System.Linq;
 
 namespace Multifractal_spectrum
@@ -294,16 +293,15 @@ namespace Multifractal_spectrum
     /// </summary>
     /// <param name="image">изображение для анализа</param>
     /// <returns></returns>
-    internal string CalculateSpectrum(Bitmap image_before, ConverterType type)
+    internal Dictionary<double, double> CalculateSpectrum(Bitmap image_before, ConverterType type)
     {
       double singularityStep = 0;
       double currentLayerSingularity = 0;
-      DirectBitmap image = ImageConverter.ConvertBitmap(image_before, type);
-
-      var layers = CreateLayerPoints(image, type, ref currentLayerSingularity, ref singularityStep);
-
-      StringBuilder sb = new StringBuilder();
       int layersCounter = 0;
+      var spectrum = new Dictionary<double, double>();
+
+      DirectBitmap image = ImageConverter.ConvertBitmap(image_before, type);
+      var layers = CreateLayerPoints(image, type, ref currentLayerSingularity, ref singularityStep);
 
       foreach (var layer in layers)
       {
@@ -311,15 +309,14 @@ namespace Multifractal_spectrum
         //TODO: избавиться от этой проверки
         if (!double.IsNaN(measure))
         {
-          sb.Append(string.Format("{0:0.00 }", currentLayerSingularity));
-          sb.Append(string.Format("{0:0.00}\r\n", measure));
+          spectrum.Add(currentLayerSingularity, measure);
         }
 
         layersCounter++;
         currentLayerSingularity += singularityStep;
       }
 
-      return sb.ToString();
+      return spectrum;
     }
   }
 }
