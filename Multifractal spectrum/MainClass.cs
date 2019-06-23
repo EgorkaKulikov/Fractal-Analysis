@@ -4,28 +4,26 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using System.Linq;
-using System.Drawing.Imaging;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
 
 namespace Multifractal_spectrum
 {
-  class MainClass
+  internal class MainClass
   {
-    private double LayerStep = 0;
-    private double CurrentLayerValue = 0;
-
-    internal List<Tuple<double, double>> LayersSingularities = new List<Tuple<double, double>>();
+    internal List<Interval> LayersSingularities = new List<Interval>();
 
     /// <summary>
     /// Создание множеств уровня по исходному изображению
     /// </summary>
     /// <param name="image"></param>
     /// <returns></returns>
-    private List<List<Tuple<int, int>>> CreateLayerPoints(DirectBitmap image, ConverterType type)
+    private List<List<Point>> CreateLayerPoints(
+      DirectBitmap image,
+      ConverterType type,
+      ref double currentLayerSingularity,
+      ref double singularityStep)
     {
-      Dictionary<Tuple<int, int>, double> densities = CalculateDensity(image, type);
-      List<List<Tuple<int, int>>> layers = new List<List<Tuple<int, int>>>();
+      Dictionary<Point, double> densities = CalculateDensity(image, type);
+      List<List<Point>> layers = new List<List<Point>>();
 
       var sortedValues = densities.Values.ToList();
       sortedValues.Sort();
@@ -36,21 +34,21 @@ namespace Multifractal_spectrum
       Console.WriteLine("Maximal singularity:   {0:0.00}", max);
 
       Console.WriteLine("Введите шаг между уровнями, например, 0,2");
-      double step = double.Parse(Console.ReadLine());
+      double step = double.Parse("0,2"/*Console.ReadLine()*/);
 
       Console.WriteLine("\nВычисляются множества уровня...");
 
       double layerStep = step;
-      LayerStep = step;
-      CurrentLayerValue = min;
+      singularityStep = step;
+      currentLayerSingularity = min;
 
 
       for (double i = min; i <= max; i += layerStep)
       {
-        LayersSingularities.Add(Tuple.Create(i, i + layerStep));
+        LayersSingularities.Add(new Interval(i, i + layerStep));
 
-        List<Tuple<int, int>> layer = new List<Tuple<int, int>>();
-        foreach (Tuple<int, int> point in densities.Keys)
+        var layer = new List<Point>();
+        foreach (Point point in densities.Keys)
         {
           if (densities[point] >= i && densities[point] < i + layerStep)
           {
@@ -70,7 +68,7 @@ namespace Multifractal_spectrum
     /// <param name="image">исходное изображение</param>
     /// <param name="layerPoints">координаты точек, соответствующих данному уровню</param>
     /// <returns></returns>
-    private double CreateAndMeasureLayer(DirectBitmap image, List<Tuple<int, int>> layerPoints, int layerNumber)
+    private double CreateAndMeasureLayer(DirectBitmap image, List<Point> layerPoints, int layerNumber)
     {
       int newWidth = image.Width - maxWindowSize * 2;
       int newHeight = image.Height - maxWindowSize * 2;
@@ -84,13 +82,13 @@ namespace Multifractal_spectrum
         }
       }
 
-      foreach (Tuple<int, int> point in layerPoints)
+      foreach (Point point in layerPoints)
       {
-        layerImage.SetPixel(point.Item1, point.Item2, Color.FromArgb(255, 0, 0, 0));
+        layerImage.SetPixel(point.X, point.Y, Color.FromArgb(255, 0, 0, 0));
       }
 
-      string layerName = "layer " + Math.Round(LayersSingularities[layerNumber].Item1, 2).ToString()
-         + "  " + Math.Round(LayersSingularities[layerNumber].Item2, 2).ToString();
+      string layerName = "layer " + Math.Round(LayersSingularities[layerNumber].Begin, 2).ToString()
+         + "  " + Math.Round(LayersSingularities[layerNumber].End, 2).ToString();
       string pathToImage = Path.Combine(Program.actualLayersPath, layerName + ".jpg");
 
       layerImage.Bitmap.Save(pathToImage);
@@ -105,18 +103,19 @@ namespace Multifractal_spectrum
     /// </summary>
     /// <param name="image">исходное изображение</param>
     /// <returns></returns>
-    private Dictionary<Tuple<int, int>, double> CalculateDensity(DirectBitmap image, ConverterType type)
+    private Dictionary<Point, double> CalculateDensity(DirectBitmap image, ConverterType type)
     {
-      Dictionary<Tuple<int, int>, double> densities = new Dictionary<Tuple<int, int>, double>();
+      var densities = new Dictionary<Point, double>();
 
       for (int i = maxWindowSize; i < image.Width - maxWindowSize; i++)
       {
         for (int j = maxWindowSize; j < image.Height - maxWindowSize; j++)
         {
-          var coord = Tuple.Create(i, j);
-          double density = CalculateDensityInPoint(coord, image, type);
+          var point = new Point(i, j);
+          double density = CalculateDensityInPoint(image, point, type);
 
-          densities.Add(Tuple.Create(i - maxWindowSize, j - maxWindowSize), density);
+          //TODO: очень криво вычислять по одной точке, а сохранять по другой
+          densities.Add(new Point(i - maxWindowSize, j - maxWindowSize), density);
         }
       }
 
@@ -129,7 +128,7 @@ namespace Multifractal_spectrum
     /// <param name="point">координаты точки</param>
     /// <param name="image">исходное изображение</param>
     /// <returns></returns>
-    private double CalculateDensityInPoint(Tuple<int, int> point, DirectBitmap image, ConverterType type)
+    private double CalculateDensityInPoint(DirectBitmap image, Point point, ConverterType type)
     {
       int[] windows = { 2, 3, 4, 5, 7 };
       for (int i = 0; i < windows.Length; i++)
@@ -162,17 +161,17 @@ namespace Multifractal_spectrum
     /// </summary>
     /// <param name="image">прямоугольник, который изучаем</param>
     /// <param name="point">координата левой верхней вершины</param>
-    /// <param name="window">размер окна</param>
+    /// <param name="windowSize">размер окна</param>
     /// <returns></returns>
-    private double CalculateIntensivity(DirectBitmap image, Tuple<int, int> point, int window, ConverterType type)
+    private double CalculateIntensivity(DirectBitmap image, Point point, int windowSize, ConverterType type)
     {
       double intensivity = 0;
-      int x = point.Item1;
-      int y = point.Item2;
+      int x = point.X;
+      int y = point.Y;
 
-      for (int i = x - window; i <= x + window; i++)
+      for (int i = x - windowSize; i <= x + windowSize; i++)
       {
-        for (int j = y - window; j <= y + window; j++)
+        for (int j = y - windowSize; j <= y + windowSize; j++)
         {
           Color pixel = image.GetPixel(i, j);
           intensivity += GetIntensivityFromPixel(pixel, type);
@@ -298,25 +297,27 @@ namespace Multifractal_spectrum
     /// <returns></returns>
     internal string CalculateSpectrum(Bitmap image_before, ConverterType type)
     {
+      double singularityStep = 0;
+      double currentLayerSingularity = 0;
       DirectBitmap image = ImageConverter.ConvertBitmap(image_before, type);
 
-      var layers = CreateLayerPoints(image, type);
-
-      int totalPoints = layers.Sum(layer => layer.Count);
+      var layers = CreateLayerPoints(image, type, ref currentLayerSingularity, ref singularityStep);
 
       StringBuilder sb = new StringBuilder();
       int layersCounter = 0;
-      foreach (List<Tuple<int,int>> layer in layers)
+
+      foreach (var layer in layers)
       {
         double measure = CreateAndMeasureLayer(image, layer, layersCounter);
+        //TODO: избавиться от этой проверки
         if (!double.IsNaN(measure))
         {
-          sb.Append(string.Format("{0:0.00 }", CurrentLayerValue));
+          sb.Append(string.Format("{0:0.00 }", currentLayerSingularity));
           sb.Append(string.Format("{0:0.00}\r\n", measure));
         }
 
         layersCounter++;
-        CurrentLayerValue += LayerStep;
+        currentLayerSingularity += singularityStep;
       }
 
       return sb.ToString();
