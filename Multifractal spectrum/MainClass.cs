@@ -9,6 +9,9 @@ namespace Multifractal_spectrum
 {
   internal class MainClass
   {
+    //TODO: при встроенной обработке окон вся логика, завязанная на maxWindowSize, должна исчезнуть
+    private const int maxWindowSize = 7;
+
     internal List<Interval> LayersSingularities = new List<Interval>();
 
     /// <summary>
@@ -96,8 +99,6 @@ namespace Multifractal_spectrum
       return CalculateMeasure(layerImage);
     }
 
-    private const int maxWindowSize = 7;
-
     /// <summary>
     /// Вычисление функции плотности для всех точек изображения
     /// </summary>
@@ -136,15 +137,15 @@ namespace Multifractal_spectrum
         if (windows[i] > maxWindowSize)
           windows[i] = maxWindowSize;
       }
+
       int n = windows.Length;
-      double xsum = 0, ysum = 0, xsqrsum = 0;
-      double xysum = 0;
+      double xsum = 0, ysum = 0, xysum = 0, xsqrsum = 0;
 
-      foreach (int eps in windows)
+      foreach (int windowSize in windows)
       {
-        double intens = CalculateIntensivity(image, point, eps, type);
+        double intens = CalculateIntensivity(image, point, windowSize, type);
 
-        double x = Math.Log(2 * eps + 1);
+        double x = Math.Log(2 * windowSize + 1);
         double y = Math.Log(intens + 1);
 
         xsum += x;
@@ -215,16 +216,16 @@ namespace Multifractal_spectrum
     {
       int[] windows = { 3, 4, 5, 6, 7, 8 };
       int n = windows.Length;
-      double xsum = 0, ysum = 0, xsqrsum = 0;
-      double xysum = 0;
+      double xsum = 0, ysum = 0, xysum = 0, xsqrsum = 0;
 
-      foreach (int eps in windows)
+      foreach (int windowSize in windows)
       {
-        double intens = CalculateBlackWindows(image, eps);
+        double intens = CalculateBlackWindows(image, windowSize);
 
-        double x = Math.Log(1.0 / eps);
+        double x = Math.Log(1.0 / windowSize);
         double y = Math.Log(intens + 1);
 
+        //TODO: этих проверок здесь быть не должно
         if (!double.IsNaN(x) && !double.IsNaN(y)
             && !double.IsInfinity(x) && !double.IsInfinity(y))
         {
@@ -235,6 +236,7 @@ namespace Multifractal_spectrum
         }
       }
 
+      //TODO: фрактальная размерность изображения не может быть отрицательной!
       return Math.Max(0.0, 1.0 * (n * xysum - xsum * ysum) / (n * xsqrsum - xsum * xsum));
     }
 
@@ -252,7 +254,10 @@ namespace Multifractal_spectrum
       {
         for (int j = 0; j < image.Height - window; j += window)
         {
-          blackWindows += ProduceWindow(image, i, j, window);
+          if (HasBlackPixel(image, i, j, window))
+          {
+            blackWindows++;
+          }
         }
       }
 
@@ -267,27 +272,21 @@ namespace Multifractal_spectrum
     /// <param name="start_y">левая верхняя координата по оси y</param>
     /// <param name="window">размер окна</param>
     /// <returns></returns>
-    private double ProduceWindow(DirectBitmap image, int start_x, int start_y, int window)
+    private bool HasBlackPixel(DirectBitmap image, int start_x, int start_y, int window)
     {
-      int black = 0, white = 0;
-
       for (int i = start_x; i < start_x + window; i++)
       {
         for (int j = start_y; j < start_y + window; j++)
         {
-          Color color = image.GetPixel(i, j);
+          var color = image.GetPixel(i, j);
           if (color.B == 0 && color.R == 0 && color.G == 0)
           {
-            black++;
-          }
-          else
-          {
-            white++;
+            return true;
           }
         }
       }
 
-      if (black > 0) return 1; else return 0;
+      return false;
     }
 
     /// <summary>
