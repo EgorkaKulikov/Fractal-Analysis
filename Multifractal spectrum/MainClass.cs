@@ -11,21 +11,28 @@ namespace Multifractal_spectrum
     //TODO: при встроенной обработке окон вся логика, завязанная на maxWindowSize, должна исчезнуть
     private const int maxWindowSize = 7;
 
-    internal List<Interval> LayersSingularities = new List<Interval>();
+    private List<Interval> layersSingularities = new List<Interval>();
 
     /// <summary>
     /// Создание множеств уровня по исходному изображению
     /// </summary>
-    /// <param name="image"></param>
-    /// <returns></returns>
-    private List<List<Point>> CreateLayerPoints(
+    /// <param name="image">Анализируемое изображение</param>
+    /// <param name="converterType">Тип конвертера</param>
+    /// <param name="currentLayerSingularity">Минимальная сингулярность изображения</param>
+    /// <param name="singularityStep">Шаг сингулярности</param>
+    /// <returns>Список слоёв, каждый из которых - список точек</returns>
+    private List<List<Point>> CreateLayers(
       DirectBitmap image,
-      ConverterType type,
+      ConverterType converterType,
       ref double currentLayerSingularity,
       ref double singularityStep)
     {
-      Dictionary<Point, double> densities = CalculateDensity(image, type);
-      List<List<Point>> layers = new List<List<Point>>();
+      //TODO: разбить метод на три части: 
+      // 1) Вычисление границ и шага сингулярности
+      // 2) Вывод на печать (в другой класс)
+      // 3) Вычисление слоёв
+      Dictionary<Point, double> densities = CalculateDensity(image, converterType);
+      var layers = new List<List<Point>>();
 
       var sortedValues = densities.Values.ToList();
       sortedValues.Sort();
@@ -47,7 +54,7 @@ namespace Multifractal_spectrum
 
       for (double i = min; i <= max; i += layerStep)
       {
-        LayersSingularities.Add(new Interval(i, i + layerStep));
+        layersSingularities.Add(new Interval(i, i + layerStep));
 
         var layer = new List<Point>();
         foreach (Point point in densities.Keys)
@@ -89,8 +96,8 @@ namespace Multifractal_spectrum
         layerImage.SetPixel(point.X, point.Y, Color.FromArgb(255, 0, 0, 0));
       }
 
-      string layerName = "layer " + Math.Round(LayersSingularities[layerNumber].Begin, 2).ToString()
-         + "  " + Math.Round(LayersSingularities[layerNumber].End, 2).ToString();
+      string layerName = "layer " + Math.Round(layersSingularities[layerNumber].Begin, 2).ToString()
+         + "  " + Math.Round(layersSingularities[layerNumber].End, 2).ToString();
       string pathToImage = Path.Combine(Program.actualLayersPath, layerName + ".jpg");
 
       layerImage.Bitmap.Save(pathToImage);
@@ -301,7 +308,7 @@ namespace Multifractal_spectrum
       var spectrum = new Dictionary<double, double>();
 
       DirectBitmap image = ImageConverter.ConvertBitmap(image_before, type);
-      var layers = CreateLayerPoints(image, type, ref currentLayerSingularity, ref singularityStep);
+      var layers = CreateLayers(image, type, ref currentLayerSingularity, ref singularityStep);
 
       foreach (var layer in layers)
       {
