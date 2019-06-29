@@ -21,7 +21,7 @@ namespace Multifractal_spectrum
       Console.WriteLine(@"Если вы хотите использовать другой путь, введите его целиком в формате
 C:\test\image1.jpg");
       Console.WriteLine();
-      string input = "2.jpg";// Console.ReadLine();
+      string input = Console.ReadLine();
       if (input.Contains(":"))
       {
         imagePath = Path.GetDirectoryName(input);
@@ -36,8 +36,8 @@ C:\test\image1.jpg");
       Console.WriteLine("5) компонента Hue палитры HSV");
       Console.WriteLine();
 
-      int converterNumber = 1;
-      //int.TryParse(Console.ReadLine(), out converterNumber);
+      int converterNumber;
+      int.TryParse(Console.ReadLine(), out converterNumber);
       ConverterType converterType = (ConverterType)(converterNumber - 1);
 
       int directoryNumber = GetDirectoryNumber(imagePath);
@@ -64,7 +64,7 @@ C:\test\image1.jpg");
       Console.WriteLine("Maximal singularity:   {0:0.00}", singularityBounds.End);
 
       Console.WriteLine("\nВведите шаг между уровнями, например, 0,2");
-      double singulatityStep = 0.2; // double.Parse(Console.ReadLine());
+      double singulatityStep = double.Parse(Console.ReadLine());
 
       //Вычисление множеств уровня
       Console.WriteLine("\nВычисляются множества уровня...");
