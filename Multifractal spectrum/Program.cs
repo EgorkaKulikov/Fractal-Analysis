@@ -15,14 +15,13 @@ namespace Multifractal_spectrum
 
     static void Main(string[] args)
     {
-      DateTime before = DateTime.Now;
       Console.WriteLine(@"Создайте папку D:\\Pictures, сохраните в ней тестовое изображение. 
 В этой же папке будут сохранены изображения, соответствующие множествам уровня");
       Console.WriteLine("\nВведите имя файла, например, 1.jpg");
       Console.WriteLine(@"Если вы хотите использовать другой путь, введите его целиком в формате
 C:\test\image1.jpg");
       Console.WriteLine();
-      string input = "2.jpg";//Console.ReadLine();
+      string input = Console.ReadLine();
       if (input.Contains(":"))
       {
         imagePath = Path.GetDirectoryName(input);
@@ -38,7 +37,7 @@ C:\test\image1.jpg");
       Console.WriteLine();
 
       int converterNumber;
-      int.TryParse("1"/*Console.ReadLine()*/, out converterNumber);
+      int.TryParse(Console.ReadLine(), out converterNumber);
       ConverterType converterType = (ConverterType)(converterNumber - 1);
 
       int directoryNumber = GetDirectoryNumber(imagePath);
@@ -48,7 +47,7 @@ C:\test\image1.jpg");
       SpectrumBuilder spectrumBuilder = new SpectrumBuilder();
       LayersBuilder layersBuilder = new LayersBuilder();
 
-
+      DateTime before = DateTime.Now;
       Bitmap image_before = (Bitmap)Image.FromFile(path);
       DirectBitmap image = ImageConverter.ConvertBitmap(image_before, converterType);
 
@@ -61,7 +60,7 @@ C:\test\image1.jpg");
       Console.WriteLine("Maximal singularity:   {0:0.00}", singularityBounds.End);
 
       Console.WriteLine("Введите шаг между уровнями, например, 0,2");
-      double singulatityStep = double.Parse("0,2"/*Console.ReadLine()*/);
+      double singulatityStep = double.Parse(Console.ReadLine());
 
       //Вычисление множеств уровня
 
@@ -95,6 +94,7 @@ C:\test\image1.jpg");
       DateTime after = DateTime.Now;
       string s = (after - before).ToString();
 
+      Console.WriteLine($"Время выполенения программы {s}");
       Console.WriteLine("\nЖелаем вам всего доброго!");
       Console.ReadKey();
     }
