@@ -64,6 +64,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConverterType.cs" />
     <Compile Include="Layer.cs" />
     <Compile Include="LayersBuilder.cs" />
     <Compile Include="Structures.cs" />

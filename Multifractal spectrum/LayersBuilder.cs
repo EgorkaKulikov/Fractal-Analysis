@@ -21,9 +21,8 @@ namespace Multifractal_spectrum
     internal Interval GetSingularityBounds(DirectBitmap image, ConverterType converterType)
     {
       CalculateDensity(image, converterType);
-      var values = Densities.Values.ToList();
 
-      return new Interval(values.Min(), values.Max());
+      return new Interval(Densities.Values.Min(), Densities.Values.Max());
     }
 
     /// <summary>

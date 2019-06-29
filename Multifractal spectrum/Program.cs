@@ -8,9 +8,10 @@ namespace Multifractal_spectrum
 {
   internal sealed class Program
   {
-    internal static string imagePath = "D:\\Pictures";
-    internal const string spectrumFileName = "spectrum.txt";
-    internal static string actualLayersPath { get; set; }
+    //TODO: при переезде на Python должно появится ГУИ и решить проблему хардкода пути
+    private static string imagePath = "D:\\Pictures";
+    private const string spectrumFileName = "spectrum.txt";
+    internal static string LayersDirectoryPath { get; private set; }
 
     static void Main(string[] args)
     {
@@ -41,8 +42,8 @@ C:\test\image1.jpg");
       ConverterType converterType = (ConverterType)(converterNumber - 1);
 
       int directoryNumber = GetDirectoryNumber(imagePath);
-      actualLayersPath = Path.Combine(imagePath, "Layers ") + directoryNumber.ToString();
-      Directory.CreateDirectory(actualLayersPath);
+      LayersDirectoryPath = Path.Combine(imagePath, "Layers ") + directoryNumber.ToString();
+      Directory.CreateDirectory(LayersDirectoryPath);
       
       SpectrumBuilder spectrumBuilder = new SpectrumBuilder();
       LayersBuilder layersBuilder = new LayersBuilder();
@@ -77,7 +78,7 @@ C:\test\image1.jpg");
       Console.WriteLine("Мультифрактальный спектр вычислен и находится в файле spectrum.txt");
 
       //Сохранение спектра в текстовый файл
-      string actualSpectrumPath = Path.Combine(actualLayersPath, spectrumFileName);
+      string actualSpectrumPath = Path.Combine(LayersDirectoryPath, spectrumFileName);
       using (StreamWriter sw = new StreamWriter(actualSpectrumPath, true))
       {
         sw.WriteLine("*********************");
