@@ -56,7 +56,8 @@ C:\test\image1.jpg");
       var singularityBounds = layersBuilder.GetSingularityBounds(image, converterType);
 
       DateTime after = DateTime.Now;
-      Console.WriteLine($"Время вычисления показателей {(after - before).ToString()}");
+      TimeSpan firstPeriod = after - before;
+      Console.WriteLine($"Время вычисления показателей {firstPeriod.ToString()}");
 
 
       Console.WriteLine("Minimal singularity:   {0:0.00}", singularityBounds.Begin);
@@ -70,14 +71,16 @@ C:\test\image1.jpg");
       before = DateTime.Now;
       var layers = layersBuilder.SplitByLayers(singularityBounds, singulatityStep);
       after = DateTime.Now;
-      Console.WriteLine($"Время определения уровней {(after - before).ToString()}");
+      TimeSpan secondPeriod = after - before;
+      Console.WriteLine($"Время определения уровней {secondPeriod.ToString()}");
 
       //Вычисление спектра
       Console.WriteLine("\nВычисляется мультифрактальный спектр...");
       before = DateTime.Now;
       var spectrum = spectrumBuilder.CalculateSpectrum(image, layers, singularityBounds, singulatityStep);
       after = DateTime.Now;
-      Console.WriteLine($"Время вычисления спектра {(after - before).ToString()}");
+      TimeSpan thirdPeriod = after - before;
+      Console.WriteLine($"Время вычисления спектра {thirdPeriod.ToString()}");
 
       Console.WriteLine("\nМножества уровня построены");
       Console.WriteLine("Номер папки с множествами уровня : {0}", directoryNumber);
@@ -97,6 +100,8 @@ C:\test\image1.jpg");
         sw.WriteLine(outputInfo);
         sw.Close();
       }
+
+      Console.WriteLine($"Общее время работы программы {firstPeriod.Add(secondPeriod).Add(thirdPeriod).ToString()}");
 
       Console.WriteLine("\nЖелаем вам всего доброго!");
       Console.ReadKey();

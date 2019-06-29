@@ -11,7 +11,7 @@ namespace Multifractal_spectrum
     private const int maxWindowSize = 7;
 
     private Dictionary<Point, double> Densities = new Dictionary<Point, double>();
-    private Dictionary<Point, double> Intensivities = new Dictionary<Point, double>();
+    private double[,] Intensivities;
 
     /// <summary>
     /// Определение границ сингулярности изображения
@@ -21,7 +21,9 @@ namespace Multifractal_spectrum
     /// <returns>Интервал сингулярностей изображения</returns>
     internal Interval GetSingularityBounds(DirectBitmap image, ConverterType converterType)
     {
+      Intensivities = new double[image.Width, image.Height];
       CalculateIntensivities(image, converterType);
+
       CalculateDensity();
 
       return new Interval(Densities.Values.Min(), Densities.Values.Max());
@@ -61,12 +63,9 @@ namespace Multifractal_spectrum
     /// </summary>
     private void CalculateDensity()
     {
-      var width = Intensivities.Keys.Max(point => point.X);
-      var height = Intensivities.Keys.Max(point => point.Y);
-
-      for (int i = maxWindowSize; i < width - maxWindowSize; i++)
+      for (int i = maxWindowSize; i < Intensivities.GetLength(0) - maxWindowSize; i++)
       {
-        for (int j = maxWindowSize; j < height - maxWindowSize; j++)
+        for (int j = maxWindowSize; j < Intensivities.GetLength(1) - maxWindowSize; j++)
         {
           var point = new Point(i, j);
           double density = CalculateDensityInPoint(point);
@@ -112,11 +111,10 @@ namespace Multifractal_spectrum
       {
         for (int j = 0; j < image.Height; j++)
         {
-          var point = new Point(i, j);
           var pixel = image.GetPixel(i, j);
           var intensivity = GetIntensivityFromPixel(pixel, converterType);
 
-          Intensivities.Add(point, intensivity);
+          Intensivities[i, j] = intensivity;
         }
       }
     }
@@ -131,17 +129,13 @@ namespace Multifractal_spectrum
     {
       double intensivity = 0;
 
-      DateTime before = DateTime.Now;
       for (int i = point.X - windowSize; i <= point.X + windowSize; i++)
       {
         for (int j = point.Y - windowSize; j <= point.Y + windowSize; j++)
         {
-          var currentPoint = new Point(i, j);
-          intensivity += Intensivities[currentPoint];
+          intensivity += Intensivities[i,j];
         }
       }
-      DateTime after = DateTime.Now;
-      string s = (after - before).ToString();
 
       return intensivity;
     }
