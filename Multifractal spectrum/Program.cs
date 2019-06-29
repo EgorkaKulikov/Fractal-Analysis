@@ -47,30 +47,37 @@ C:\test\image1.jpg");
       SpectrumBuilder spectrumBuilder = new SpectrumBuilder();
       LayersBuilder layersBuilder = new LayersBuilder();
 
+      //Вычисление показателей сингулярности
       DateTime before = DateTime.Now;
+
       Bitmap image_before = (Bitmap)Image.FromFile(path);
       DirectBitmap image = ImageConverter.ConvertBitmap(image_before, converterType);
-
-      //Вычисление показателей сингулярности
-
       Console.WriteLine("\nВычисляются показатели сингулярности...");
       var singularityBounds = layersBuilder.GetSingularityBounds(image, converterType);
+
+      DateTime after = DateTime.Now;
+      Console.WriteLine($"Время вычисления показателей {(after - before).ToString()}");
+
 
       Console.WriteLine("Minimal singularity:   {0:0.00}", singularityBounds.Begin);
       Console.WriteLine("Maximal singularity:   {0:0.00}", singularityBounds.End);
 
-      Console.WriteLine("Введите шаг между уровнями, например, 0,2");
+      Console.WriteLine("\nВведите шаг между уровнями, например, 0,2");
       double singulatityStep = double.Parse(Console.ReadLine());
 
       //Вычисление множеств уровня
-
+      Console.WriteLine("\nВычисляются множества уровня...");
+      before = DateTime.Now;
       var layers = layersBuilder.SplitByLayers(singularityBounds, singulatityStep);
+      after = DateTime.Now;
+      Console.WriteLine($"Время определения уровней {(after - before).ToString()}");
 
       //Вычисление спектра
-
-      Console.WriteLine("\nВычисляются множества уровня...");
-
+      Console.WriteLine("\nВычисляется мультифрактальный спектр...");
+      before = DateTime.Now;
       var spectrum = spectrumBuilder.CalculateSpectrum(image, layers, singularityBounds, singulatityStep);
+      after = DateTime.Now;
+      Console.WriteLine($"Время вычисления спектра {(after - before).ToString()}");
 
       Console.WriteLine("\nМножества уровня построены");
       Console.WriteLine("Номер папки с множествами уровня : {0}", directoryNumber);
@@ -91,10 +98,6 @@ C:\test\image1.jpg");
         sw.Close();
       }
 
-      DateTime after = DateTime.Now;
-      string s = (after - before).ToString();
-
-      Console.WriteLine($"Время выполенения программы {s}");
       Console.WriteLine("\nЖелаем вам всего доброго!");
       Console.ReadKey();
     }
