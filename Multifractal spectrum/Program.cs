@@ -21,7 +21,7 @@ namespace Multifractal_spectrum
       Console.WriteLine(@"Если вы хотите использовать другой путь, введите его целиком в формате
 C:\test\image1.jpg");
       Console.WriteLine();
-      string input = Console.ReadLine();
+      string input = "2.jpg";//Console.ReadLine();
       if (input.Contains(":"))
       {
         imagePath = Path.GetDirectoryName(input);
@@ -36,20 +36,34 @@ C:\test\image1.jpg");
       Console.WriteLine("5) компонента Hue палитры HSV");
       Console.WriteLine();
 
-      int converterType;
-      int.TryParse(Console.ReadLine(), out converterType);
+      int converterNumber;
+      int.TryParse("1"/*Console.ReadLine()*/, out converterNumber);
+      ConverterType converterType = (ConverterType)(converterNumber - 1);
 
-      int existedDirectories = (new DirectoryInfo(imagePath)).GetDirectories().Length;
       int directoryNumber = GetDirectoryNumber(imagePath);
       actualLayersPath = Path.Combine(imagePath, "Layers ") + directoryNumber.ToString();
       Directory.CreateDirectory(actualLayersPath);
+      
+      MainClass mainClass = new MainClass();
+      Bitmap image_before = (Bitmap)Image.FromFile(path);
+      DirectBitmap image = ImageConverter.ConvertBitmap(image_before, converterType);
+
+      //Вычисление показателей сингулярности
 
       Console.WriteLine("\nВычисляются показатели сингулярности...");
-      MainClass mainClass = new MainClass();
+      var singularityBounds = mainClass.GetSingularityBounds(image, converterType);
+
+      Console.WriteLine("Minimal singularity:   {0:0.00}", singularityBounds.Begin);
+      Console.WriteLine("Maximal singularity:   {0:0.00}", singularityBounds.End);
+
+      Console.WriteLine("Введите шаг между уровнями, например, 0,2");
+      double singulatityStep = double.Parse("0,2"/*Console.ReadLine()*/);
 
       //Создание изображения, вычисление спектра и множеств уровня
-      Bitmap image = (Bitmap)Image.FromFile(path);
-      var spectrum = mainClass.CalculateSpectrum(image, (ConverterType)(converterType - 1));
+
+      Console.WriteLine("\nВычисляются множества уровня...");
+
+      var spectrum = mainClass.CalculateSpectrum(image, singularityBounds, singulatityStep);
 
       Console.WriteLine("\nМножества уровня построены");
       Console.WriteLine("Номер папки с множествами уровня : {0}", directoryNumber);

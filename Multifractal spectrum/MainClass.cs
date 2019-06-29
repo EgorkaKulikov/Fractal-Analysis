@@ -10,56 +10,42 @@ namespace Multifractal_spectrum
   {
     //TODO: при встроенной обработке окон вся логика, завязанная на maxWindowSize, должна исчезнуть
     private const int maxWindowSize = 7;
-
     private List<Interval> layersSingularities = new List<Interval>();
+
+    private Dictionary<Point, double> Densities = new Dictionary<Point, double>();
+
+    /// <summary>
+    /// Определение границ сингулярности изображения
+    /// </summary>
+    /// <param name="image">Анализируемое изображение</param>
+    /// <param name="converterType">Тип конвертера</param>
+    /// <returns></returns>
+    internal Interval GetSingularityBounds(DirectBitmap image, ConverterType converterType)
+    {
+      CalculateDensity(image, converterType);
+      var values = Densities.Values.ToList();
+
+      return new Interval(values.Min(), values.Max());
+    }
 
     /// <summary>
     /// Создание множеств уровня по исходному изображению
     /// </summary>
-    /// <param name="image">Анализируемое изображение</param>
-    /// <param name="converterType">Тип конвертера</param>
-    /// <param name="currentLayerSingularity">Минимальная сингулярность изображения</param>
+    /// <param name="singularityBounds">Интервал сингулярности</param>
     /// <param name="singularityStep">Шаг сингулярности</param>
     /// <returns>Список слоёв, каждый из которых - список точек</returns>
-    private List<List<Point>> CreateLayers(
-      DirectBitmap image,
-      ConverterType converterType,
-      ref double currentLayerSingularity,
-      ref double singularityStep)
+    private List<List<Point>> CreateLayers(Interval singularityBounds, double singularityStep)
     {
-      //TODO: разбить метод на три части: 
-      // 1) Вычисление границ и шага сингулярности
-      // 2) Вывод на печать (в другой класс)
-      // 3) Вычисление слоёв
-      Dictionary<Point, double> densities = CalculateDensity(image, converterType);
       var layers = new List<List<Point>>();
 
-      var sortedValues = densities.Values.ToList();
-      sortedValues.Sort();
-      double min = sortedValues[0];
-      double max = sortedValues[sortedValues.Count - 1];
-
-      Console.WriteLine("Minimal singularity:   {0:0.00}", min);
-      Console.WriteLine("Maximal singularity:   {0:0.00}", max);
-
-      Console.WriteLine("Введите шаг между уровнями, например, 0,2");
-      double step = double.Parse("0,2"/*Console.ReadLine()*/);
-
-      Console.WriteLine("\nВычисляются множества уровня...");
-
-      double layerStep = step;
-      singularityStep = step;
-      currentLayerSingularity = min;
-
-
-      for (double i = min; i <= max; i += layerStep)
+      for (double i = singularityBounds.Begin; i <= singularityBounds.End; i += singularityStep)
       {
-        layersSingularities.Add(new Interval(i, i + layerStep));
+        layersSingularities.Add(new Interval(i, i + singularityStep));
 
         var layer = new List<Point>();
-        foreach (Point point in densities.Keys)
+        foreach (Point point in Densities.Keys)
         {
-          if (densities[point] >= i && densities[point] < i + layerStep)
+          if (Densities[point] >= i && Densities[point] < i + singularityStep)
           {
             layer.Add(point);
           }
@@ -110,10 +96,8 @@ namespace Multifractal_spectrum
     /// </summary>
     /// <param name="image">исходное изображение</param>
     /// <returns></returns>
-    private Dictionary<Point, double> CalculateDensity(DirectBitmap image, ConverterType type)
+    private void CalculateDensity(DirectBitmap image, ConverterType type)
     {
-      var densities = new Dictionary<Point, double>();
-
       for (int i = maxWindowSize; i < image.Width - maxWindowSize; i++)
       {
         for (int j = maxWindowSize; j < image.Height - maxWindowSize; j++)
@@ -121,12 +105,10 @@ namespace Multifractal_spectrum
           var point = new Point(i, j);
           double density = CalculateDensityInPoint(image, point, type);
 
-          //TODO: очень криво вычислять по одной точке, а сохранять по другой
-          densities.Add(new Point(i - maxWindowSize, j - maxWindowSize), density);
+          //TODO: очень криво вычислять по одной точке, а сохранять по другой, исправление на Python
+          Densities.Add(new Point(i - maxWindowSize, j - maxWindowSize), density);
         }
       }
-
-      return densities;
     }
 
     /// <summary>
@@ -298,17 +280,21 @@ namespace Multifractal_spectrum
     /// <summary>
     /// Вычисление мультифрактального спектра: создание уровней и измерение их размерности
     /// </summary>
-    /// <param name="image">изображение для анализа</param>
+    /// <param name="image">Анализируемое изображение</param>
+    /// <param name="type">Тип конвертера</param>
+    /// <param name="singularityBounds">Интервал сингулярности</param>
+    /// <param name="singularityStep">Шаг сингулярности</param>
     /// <returns></returns>
-    internal Dictionary<double, double> CalculateSpectrum(Bitmap image_before, ConverterType type)
+    internal Dictionary<double, double> CalculateSpectrum(
+      DirectBitmap image,  
+      Interval singularityBounds,
+      double singularityStep)
     {
-      double singularityStep = 0;
-      double currentLayerSingularity = 0;
+      double currentLayerSingularity = singularityBounds.Begin;
       int layersCounter = 0;
       var spectrum = new Dictionary<double, double>();
 
-      DirectBitmap image = ImageConverter.ConvertBitmap(image_before, type);
-      var layers = CreateLayers(image, type, ref currentLayerSingularity, ref singularityStep);
+      var layers = CreateLayers(singularityBounds, singularityStep);
 
       foreach (var layer in layers)
       {
