@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Multifractal_spectrum
 {
@@ -9,7 +8,7 @@ namespace Multifractal_spectrum
     /// Уточнение результата вычислений с помощью МНК
     /// </summary>
     /// <param name="points">множество точек и значений в них</param>
-    /// <returns></returns>
+    /// <returns>Уточнённое значение</returns>
     internal static double ApplyMethod(List<(double X, double Y)> points)
     {
       int n = points.Count;
