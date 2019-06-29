@@ -64,12 +64,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Layer.cs" />
+    <Compile Include="LayersBuilder.cs" />
     <Compile Include="Structures.cs" />
     <Compile Include="DirectBitmap.cs" />
     <Compile Include="ImageConverter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MainClass.cs" />
+    <Compile Include="SpectrumBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -44,14 +44,17 @@ C:\test\image1.jpg");
       actualLayersPath = Path.Combine(imagePath, "Layers ") + directoryNumber.ToString();
       Directory.CreateDirectory(actualLayersPath);
       
-      MainClass mainClass = new MainClass();
+      SpectrumBuilder spectrumBuilder = new SpectrumBuilder();
+      LayersBuilder layersBuilder = new LayersBuilder();
+
+
       Bitmap image_before = (Bitmap)Image.FromFile(path);
       DirectBitmap image = ImageConverter.ConvertBitmap(image_before, converterType);
 
       //Вычисление показателей сингулярности
 
       Console.WriteLine("\nВычисляются показатели сингулярности...");
-      var singularityBounds = mainClass.GetSingularityBounds(image, converterType);
+      var singularityBounds = layersBuilder.GetSingularityBounds(image, converterType);
 
       Console.WriteLine("Minimal singularity:   {0:0.00}", singularityBounds.Begin);
       Console.WriteLine("Maximal singularity:   {0:0.00}", singularityBounds.End);
@@ -59,11 +62,15 @@ C:\test\image1.jpg");
       Console.WriteLine("Введите шаг между уровнями, например, 0,2");
       double singulatityStep = double.Parse("0,2"/*Console.ReadLine()*/);
 
-      //Создание изображения, вычисление спектра и множеств уровня
+      //Вычисление множеств уровня
+
+      var layers = layersBuilder.SplitByLayers(singularityBounds, singulatityStep);
+
+      //Вычисление спектра
 
       Console.WriteLine("\nВычисляются множества уровня...");
 
-      var spectrum = mainClass.CalculateSpectrum(image, singularityBounds, singulatityStep);
+      var spectrum = spectrumBuilder.CalculateSpectrum(image, layers, singularityBounds, singulatityStep);
 
       Console.WriteLine("\nМножества уровня построены");
       Console.WriteLine("Номер папки с множествами уровня : {0}", directoryNumber);
