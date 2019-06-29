@@ -10,7 +10,7 @@ namespace Multifractal_spectrum
     //TODO: вся логика, завязанная на maxWindowSize, должна исчезнуть, исправление на Python
     private const int maxWindowSize = 7;
 
-    private Dictionary<Point, double> Densities = new Dictionary<Point, double>();
+    private double[,] Densities;
     private double[,] Intensivities;
 
     /// <summary>
@@ -26,7 +26,8 @@ namespace Multifractal_spectrum
 
       CalculateDensity();
 
-      return new Interval(Densities.Values.Min(), Densities.Values.Max());
+      var densityValues = Densities.Cast<double>();
+      return new Interval(densityValues.Min(), densityValues.Max());
     }
 
     /// <summary>
@@ -39,16 +40,22 @@ namespace Multifractal_spectrum
     {
       var layers = new List<Layer>();
 
-      for (double i = singularityBounds.Begin; i <= singularityBounds.End; i += singularityStep)
+      for (double sin = singularityBounds.Begin; sin <= singularityBounds.End; sin += singularityStep)
       {
-        var layerSingularity = new Interval(i, i + singularityStep);
+        var layerSingularity = new Interval(sin, sin + singularityStep);
 
         var points = new List<Point>();
-        foreach (Point point in Densities.Keys)
+        int width = Densities.GetLength(0);
+        int height = Densities.GetLength(1);
+
+        for (int i = 0; i < width; i++)
         {
-          if (Densities[point] >= i && Densities[point] < i + singularityStep)
+          for (int j = 0; j < height; j++)
           {
-            points.Add(point);
+            if (Densities[i, j] >= sin && Densities[i, j] < sin + singularityStep)
+            {
+              points.Add(new Point(i,j));
+            }
           }
         }
 
@@ -63,14 +70,19 @@ namespace Multifractal_spectrum
     /// </summary>
     private void CalculateDensity()
     {
-      for (int i = maxWindowSize; i < Intensivities.GetLength(0) - maxWindowSize; i++)
+      int width = Intensivities.GetLength(0);
+      int height = Intensivities.GetLength(1);
+
+      Densities = new double[width - 2 * maxWindowSize, height - 2 * maxWindowSize];
+      for (int i = maxWindowSize; i < width - maxWindowSize; i++)
       {
-        for (int j = maxWindowSize; j < Intensivities.GetLength(1) - maxWindowSize; j++)
+        for (int j = maxWindowSize; j < height - maxWindowSize; j++)
         {
           var point = new Point(i, j);
           double density = CalculateDensityInPoint(point);
+          
           //TODO: очень криво вычислять по одной точке, а сохранять по другой, исправление на Python
-          Densities.Add(new Point(point.X - maxWindowSize, point.Y - maxWindowSize), density);
+          Densities[point.X - maxWindowSize, point.Y - maxWindowSize] = density;
         }
       }
     }
