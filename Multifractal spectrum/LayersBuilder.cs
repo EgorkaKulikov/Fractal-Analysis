@@ -89,23 +89,20 @@ namespace Multifractal_spectrum
           windows[i] = maxWindowSize;
       }
 
-      int n = windows.Length;
-      double xsum = 0, ysum = 0, xysum = 0, xsqrsum = 0;
+      var points = windows
+                      .Select(windowSize =>
+                              {
+                                double intens = CalculateIntensivity(image, point, windowSize, type);
 
-      foreach (int windowSize in windows)
-      {
-        double intens = CalculateIntensivity(image, point, windowSize, type);
+                                //CRITICAL: НБ, почему здесь есть двойка, а в вычислении спектра нет? 
+                                double x = Math.Log(2 * windowSize + 1);
+                                double y = Math.Log(intens + 1);
 
-        double x = Math.Log(2 * windowSize + 1);
-        double y = Math.Log(intens + 1);
+                                return (x,y);
+                              })
+                      .ToList();
 
-        xsum += x;
-        ysum += y;
-        xsqrsum += x * x;
-        xysum += x * y;
-      }
-
-      return 1.0 * (n * xysum - xsum * ysum) / (n * xsqrsum - xsum * xsum);
+      return LeastSquares.ApplyMethod(points);
     }
 
     /// <summary>
