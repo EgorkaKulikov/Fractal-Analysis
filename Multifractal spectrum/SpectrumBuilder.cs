@@ -102,22 +102,14 @@ namespace Multifractal_spectrum
                               {
                                 double intens = CalculateBlackWindows(image, windowSize);
 
-                                double x = Math.Log(1.0 / windowSize);
+                                double x = Math.Log(windowSize);
                                 double y = Math.Log(intens + 1);
-
-                                //TODO: этих проверок здесь быть не должно
-                                if (double.IsNaN(x) || double.IsNaN(y)
-                                    || double.IsInfinity(x) || double.IsInfinity(y))
-                                {
-                                  throw new Exception($"Некорректное значение: x = {x}, y = {y}");
-                                }
 
                                 return (x, y);
                               })
                       .ToList();
 
-      //TODO: фрактальная размерность изображения не может быть отрицательной!
-      return Math.Max(0.0, LeastSquares.ApplyMethod(points));
+      return -LeastSquares.ApplyMethod(points);
     }
 
     /// <summary>
