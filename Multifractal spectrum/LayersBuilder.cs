@@ -7,9 +7,6 @@ namespace Multifractal_spectrum
 {
   internal class LayersBuilder
   {
-    //TODO: вся логика, завязанная на maxWindowSize, должна исчезнуть, исправление на Python
-    private const int maxWindowSize = 7;
-
     private double[,] Densities;
     private double[,] Intensivities;
 
@@ -24,7 +21,7 @@ namespace Multifractal_spectrum
       Intensivities = new double[image.Width, image.Height];
       CalculateIntensivities(image, converterType);
 
-      CalculateDensity();
+      CalculateDensity(image);
 
       var densityValues = Densities.Cast<double>();
       return new Interval(densityValues.Min(), densityValues.Max());
@@ -68,21 +65,21 @@ namespace Multifractal_spectrum
     /// <summary>
     /// Вычисление функции плотности для всех точек изображения
     /// </summary>
-    private void CalculateDensity()
+    /// <param name="image">Анализируемое изображение</param>
+    private void CalculateDensity(DirectBitmap image)
     {
       int width = Intensivities.GetLength(0);
       int height = Intensivities.GetLength(1);
 
-      Densities = new double[width - 2 * maxWindowSize, height - 2 * maxWindowSize];
-      for (int i = maxWindowSize; i < width - maxWindowSize; i++)
+      Densities = new double[width, height];
+      for (int i = 0; i < width; i++)
       {
-        for (int j = maxWindowSize; j < height - maxWindowSize; j++)
+        for (int j = 0; j < height; j++)
         {
           var point = new Point(i, j);
-          double density = CalculateDensityInPoint(point);
-          
-          //TODO: очень криво вычислять по одной точке, а сохранять по другой, исправление на Python
-          Densities[point.X - maxWindowSize, point.Y - maxWindowSize] = density;
+          double density = CalculateDensityInPoint(image, point);
+
+          Densities[i, j] = density;
         }
       }
     }
@@ -90,16 +87,17 @@ namespace Multifractal_spectrum
     /// <summary>
     /// Вычисление функции плотности в окрестности данной точки
     /// </summary>  
+    /// <param name="image">Анализируемое изображение</param>
     /// <param name="point">Координаты точки</param>
     /// <returns>Значение функции плотности в окрестности данной точки</returns>
-    private double CalculateDensityInPoint(Point point)
+    private double CalculateDensityInPoint(DirectBitmap image, Point point)
     {
       int[] windows = { 2, 3, 4, 5, 7 }; //Нельзя использовать значения больше maxWindowSize
 
       var points = windows
                       .Select(windowSize =>
                               {
-                                double intens = CalculateIntensivity(point, windowSize);
+                                double intens = CalculateIntensivity(image, point, windowSize);
 
                                 //CRITICAL: НБ, почему здесь есть двойка, а в вычислении спектра нет? 
                                 double x = Math.Log(2 * windowSize + 1);
@@ -134,16 +132,17 @@ namespace Multifractal_spectrum
     /// <summary>
     /// Вычисление суммарной интенсивности пикселей в прямоугольнике
     /// </summary>
+    /// <param name="image">Анализируемое изображение</param>
     /// <param name="point">Цетральная точка области</param>
     /// <param name="windowSize">Размер окна</param>
     /// <returns>Cуммарная интенсивность пикселей в области</returns>
-    private double CalculateIntensivity(Point point, int windowSize)
+    private double CalculateIntensivity(DirectBitmap image, Point point, int windowSize)
     {
       double intensivity = 0;
 
-      for (int i = point.X - windowSize; i <= point.X + windowSize; i++)
+      for (int i = Math.Max(point.X - windowSize, 0); i < Math.Min(point.X + windowSize, image.Width); i++)
       {
-        for (int j = point.Y - windowSize; j <= point.Y + windowSize; j++)
+        for (int j = Math.Max(point.Y - windowSize, 0); j < Math.Min(point.Y + windowSize, image.Height); j++)
         {
           intensivity += Intensivities[i,j];
         }
