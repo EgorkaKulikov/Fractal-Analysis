@@ -140,9 +140,9 @@ namespace Multifractal_spectrum
     {
       double intensivity = 0;
 
-      for (int i = Math.Max(point.X - windowSize, 0); i < Math.Min(point.X + windowSize, image.Width); i++)
+      for (int i = Math.Max(point.X - windowSize, 0); i < Math.Min(point.X + windowSize + 1, image.Width); i++)
       {
-        for (int j = Math.Max(point.Y - windowSize, 0); j < Math.Min(point.Y + windowSize, image.Height); j++)
+        for (int j = Math.Max(point.Y - windowSize, 0); j < Math.Min(point.Y + windowSize + 1, image.Height); j++)
         {
           intensivity += Intensivities[i,j];
         }

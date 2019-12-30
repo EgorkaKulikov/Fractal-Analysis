@@ -137,9 +137,9 @@ namespace Multifractal_spectrum
     /// <returns>Результат проверки</returns>
     private bool HasBlackPixel(DirectBitmap image, int start_x, int start_y, int window)
     {
-      for (int i = start_x; i < Math.Min(start_x + window, image.Width); i++)
+      for (int i = start_x; i < Math.Min(start_x + window + 1, image.Width); i++)
       {
-        for (int j = start_y; j < Math.Min(start_y + window, image.Height); j++)
+        for (int j = start_y; j < Math.Min(start_y + window + 1, image.Height); j++)
         {
           var color = image.GetPixel(i, j);
           if (color.B == 0 && color.R == 0 && color.G == 0)
