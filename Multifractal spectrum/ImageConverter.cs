@@ -30,7 +30,7 @@ namespace Multifractal_spectrum
       switch (type)
       {
         case ConverterType.Grayscale:
-          byte middle = (byte)((pixel.R + pixel.G + pixel.B) / 3);
+          byte middle = (byte)(0.299*pixel.R + 0.587*pixel.G + 0.114*pixel.B);
           r = middle;
           g = middle;
           b = middle;
