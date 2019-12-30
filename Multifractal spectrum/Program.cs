@@ -13,7 +13,7 @@ namespace Multifractal_spectrum
     private const string spectrumFileName = "spectrum.txt";
     internal static string LayersDirectoryPath { get; private set; }
 
-    static void Main(string[] args)
+    static void Main()
     {
       Console.WriteLine(@"Создайте папку D:\\Pictures, сохраните в ней тестовое изображение. 
 В этой же папке будут сохранены изображения, соответствующие множествам уровня");
@@ -44,14 +44,14 @@ C:\test\image1.jpg");
       LayersDirectoryPath = Path.Combine(imagePath, "Layers ") + directoryNumber.ToString();
       Directory.CreateDirectory(LayersDirectoryPath);
       
-      SpectrumBuilder spectrumBuilder = new SpectrumBuilder();
-      LayersBuilder layersBuilder = new LayersBuilder();
+      var spectrumBuilder = new SpectrumBuilder();
+      var layersBuilder = new LayersBuilder();
 
       //Вычисление показателей сингулярности
       DateTime before = DateTime.Now;
 
-      Bitmap image_before = (Bitmap)Image.FromFile(path);
-      DirectBitmap image = ImageConverter.ConvertBitmap(image_before, converterType);
+      var image_before = (Bitmap)Image.FromFile(path);
+      var image = ImageConverter.ConvertBitmap(image_before, converterType);
       Console.WriteLine("\nВычисляются показатели сингулярности...");
       var singularityBounds = layersBuilder.GetSingularityBounds(image, converterType);
 
