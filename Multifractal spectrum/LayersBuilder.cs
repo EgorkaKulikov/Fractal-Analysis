@@ -92,14 +92,13 @@ namespace Multifractal_spectrum
     /// <returns>Значение функции плотности в окрестности данной точки</returns>
     private double CalculateDensityInPoint(DirectBitmap image, Point point)
     {
-      int[] windows = { 2, 3, 4, 5, 7 }; //Нельзя использовать значения больше maxWindowSize
+      int[] windows = { 2, 3, 4, 5, 7 };
 
       var points = windows
                       .Select(windowSize =>
                               {
                                 double intens = CalculateIntensivity(image, point, windowSize);
 
-                                //CRITICAL: НБ, почему здесь есть двойка, а в вычислении спектра нет? 
                                 double x = Math.Log(2 * windowSize + 1);
                                 double y = Math.Log(intens + 1);
 
