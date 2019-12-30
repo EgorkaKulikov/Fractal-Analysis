@@ -8,9 +8,6 @@ namespace Multifractal_spectrum
 {
   internal class SpectrumBuilder
   {
-    //TODO: вся логика, завязанная на maxWindowSize, должна исчезнуть, исправление на Python
-    private const int maxWindowSize = 7;
-
     /// <summary>
     /// Вычисление мультифрактального спектра: создание уровней и измерение их размерности
     /// </summary>
@@ -31,11 +28,7 @@ namespace Multifractal_spectrum
       foreach (var layer in layers)
       {
         double measure = CreateAndMeasureLayer(image, layer);
-        //TODO: избавиться от этой проверки
-        if (!double.IsNaN(measure))
-        {
-          spectrum.Add(currentLayerSingularity, measure);
-        }
+        spectrum.Add(currentLayerSingularity, measure);
 
         currentLayerSingularity += singularityStep;
       }
@@ -51,9 +44,7 @@ namespace Multifractal_spectrum
     /// <returns>Изображение слоя и его фрактальная размерность</returns>
     private double CreateAndMeasureLayer(DirectBitmap image, Layer layer)
     {
-      int newWidth = image.Width - maxWindowSize * 2;
-      int newHeight = image.Height - maxWindowSize * 2;
-      DirectBitmap layerImage = new DirectBitmap(newWidth, newHeight);
+      DirectBitmap layerImage = new DirectBitmap(image.Width, image.Height);
 
       for (int i = 0; i < layerImage.Width; i++)
       {
@@ -122,9 +113,9 @@ namespace Multifractal_spectrum
     {
       double blackWindows = 0;
 
-      for (int i = 0; i < image.Width - window; i += window)
+      for (int i = 0; i < image.Width; i += window)
       {
-        for (int j = 0; j < image.Height - window; j += window)
+        for (int j = 0; j < image.Height; j += window)
         {
           if (HasBlackPixel(image, i, j, window))
           {
@@ -146,9 +137,9 @@ namespace Multifractal_spectrum
     /// <returns>Результат проверки</returns>
     private bool HasBlackPixel(DirectBitmap image, int start_x, int start_y, int window)
     {
-      for (int i = start_x; i < start_x + window; i++)
+      for (int i = start_x; i < Math.Min(start_x + window, image.Width); i++)
       {
-        for (int j = start_y; j < start_y + window; j++)
+        for (int j = start_y; j < Math.Min(start_y + window, image.Height); j++)
         {
           var color = image.GetPixel(i, j);
           if (color.B == 0 && color.R == 0 && color.G == 0)
