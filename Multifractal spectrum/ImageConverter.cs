@@ -30,8 +30,9 @@ namespace Multifractal_spectrum
       switch (type)
       {
         case ConverterType.Grayscale:
-          var average = 0.299 * pixel.R + 0.587 * pixel.G + 0.114 * pixel.B;
-          var value = (byte)Math.Round(average);
+          //var average = 0.299 * pixel.R + 0.587 * pixel.G + 0.114 * pixel.B;         
+          var value = (byte)((pixel.R + pixel.G + pixel.B) / 3);
+          //var value = (byte)Math.Round(average);
           r = value;
           g = value;
           b = value;

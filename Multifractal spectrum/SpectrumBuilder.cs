@@ -8,6 +8,9 @@ namespace Multifractal_spectrum
 {
   internal class SpectrumBuilder
   {
+
+    private const int maxWindowSize = 7;
+
     /// <summary>
     /// Вычисление мультифрактального спектра: создание уровней и измерение их размерности
     /// </summary>
@@ -44,7 +47,10 @@ namespace Multifractal_spectrum
     /// <returns>Изображение слоя и его фрактальная размерность</returns>
     private double CreateAndMeasureLayer(DirectBitmap image, Layer layer)
     {
-      DirectBitmap layerImage = new DirectBitmap(image.Width, image.Height);
+      int newWidth = image.Width - maxWindowSize * 2;
+      int newHeight = image.Height - maxWindowSize * 2;
+      var layerImage = new DirectBitmap(newWidth, newHeight);
+
 
       for (int i = 0; i < layerImage.Width; i++)
       {
@@ -113,9 +119,9 @@ namespace Multifractal_spectrum
     {
       double blackWindows = 0;
 
-      for (int i = 0; i < image.Width; i += window)
+      for (int i = 0; i < image.Width - window; i += window)
       {
-        for (int j = 0; j < image.Height; j += window)
+        for (int j = 0; j < image.Height - window; j += window)
         {
           if (HasBlackPixel(image, i, j, window))
           {
@@ -137,9 +143,9 @@ namespace Multifractal_spectrum
     /// <returns>Результат проверки</returns>
     private bool HasBlackPixel(DirectBitmap image, int start_x, int start_y, int window)
     {
-      for (int i = start_x; i < Math.Min(start_x + window + 1, image.Width); i++)
+      for (int i = start_x; i < start_x + window; i++)
       {
-        for (int j = start_y; j < Math.Min(start_y + window + 1, image.Height); j++)
+        for (int j = start_y; j < start_y + window; j++)
         {
           var color = image.GetPixel(i, j);
           if (color.B == 0 && color.R == 0 && color.G == 0)
